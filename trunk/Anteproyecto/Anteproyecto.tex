@@ -1,0 +1,43 @@
+\documentclass[a4paper,10pt]{article}
+%\usepackage[latin1]{inputenc} % Paquetes de idioma
+\usepackage[utf8]{inputenc} % Paquetes de idioma
+\usepackage[spanish]{babel} % Paquetes de idioma
+\usepackage{graphicx} % Paquete para ingresar gráficos
+\usepackage{grffile}
+\usepackage{hyperref}
+\usepackage{fancybox}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{listings}
+% Paquetes de macros de Circuitos
+%\usepackage{pstricks}
+\usepackage{tikz}
+
+% Encabezado y Pié de página
+\input{EncabezadoyPie.tex}
+% Carátula del Trabajo
+\title{ \input{Portada.tex} }
+
+\begin{document}
+	\maketitle % Hace que el título anterior sea el principal del documento
+	\newpage
+
+	\tableofcontents % Esta línea genera un indice a partir de las secciones y subsecciones creadas en el documento
+	\newpage
+
+	\section{Funcionalidades}
+		\subsection{Control Remoto}
+			\begin{itemize}
+				\item Display indicador de velocidad del auto
+				\item Motor erótico (te hace vibrar)
+				\item Alarma de aviso de autodestrucción
+				\item Medidor estado del auto
+				\item Recepción de datos del auto a través del receptor (Comunicación Serie)
+			\end{itemize}
+		\subsection{Autito}
+			\begin{itemize}
+				\item Control de los Motores (mediante dos puerto H)
+				\item Envío de datos de los bumpers al micro (los bumpers deben ser doble llave)
+				\item Envío de datos del micro al emisor (Comunicación Serie)
+			\end{itemize}
+\end{document}
