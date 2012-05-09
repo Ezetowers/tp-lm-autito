@@ -1,5 +1,5 @@
 \documentclass[a4paper,10pt]{article}
-%\usepackage[latin1]{inputenc} % Paquetes de idioma
+%\usepackage[latin1]{inputenc} % Paquetes de idioma (otro encoding)
 \usepackage[utf8]{inputenc} % Paquetes de idioma
 \usepackage[spanish]{babel} % Paquetes de idioma
 \usepackage{graphicx} % Paquete para ingresar gráficos
@@ -25,6 +25,14 @@
 	\tableofcontents % Esta línea genera un indice a partir de las secciones y subsecciones creadas en el documento
 	\newpage
 
+	\section{Proyecto: Autito RC}
+		El proyecto a realizar es un autito manejado a través de comunicación inalámbrica por un medio control remoto (estos autos son los llamados \emph{RC cars}).
+		Las tarea a desarrollar por el grupo consistirá en diseñar el circuito de control que permita poder manejar el autito. Para esta tarea se utilizarán dos
+		microcontroladores de la familia Atmel, uno para el circuito del auto y el otro para el circuito del control remoto. \\
+		\indent Además de la función básica de poder manejar al autito remota a través del control, 
+		
+		\indent Lalala 
+
 	\section{Funcionalidades}
 		\subsection{Control Remoto}
 			\begin{itemize}
@@ -40,4 +48,15 @@
 				\item Envío de datos de los bumpers al micro (los bumpers deben ser doble llave)
 				\item Envío de datos del micro al emisor (Comunicación Serie)
 			\end{itemize}
+
+	\section{Diagramas en Bloques}
+		\subsection{Autito}
+			\begin{figure}[!htb]
+					\centering
+					\includegraphics[width=13cm]{Imagenes/DiagramaAutito.pdf}
+					\caption{Diagrama en Bloques del Autito} \label{img001}
+				\end{figure}
+
+		\subsection{Control Remoto}
+		\subsection{Software}
 \end{document}
