@@ -63,6 +63,11 @@
 					\end{figure}
 				
 		\subsection{Control Remoto}
+			\subsection{Comando}
+				El comando del auto estará compuesto por dos palancas. Uno de ellas tendrá la función de mover al autito para adelante o para atrás, mientras que la otra
+				tendrá la función de hacer girar las ruedas delanteras. Las palancas en un principió serán digitales, por lo cual sólo tendrán tres valores definidos:
+				\emph{Adelante, Atrás o Quieto} en el caso de la palanca que controla el motor del vehículo y \emph{Derecha,Izquierda, Quieto} en el caso de la palanca 
+				que controla la tracción delantera del autito.
 			\subsubsection{Velocidades (Caja de Cambios)}
 				A partir de un par de botones, se podrá ir variando la velocidad del miniauto. La cantidad de velocidades que poseerá el mismo aún no está definido.
 				El control poseerá un botón para aumentar la velocidad y otro para decrementar la velocidad.
@@ -77,12 +82,14 @@
 			\subsubsection{Diagrama En Bloques}
 				\begin{figure}[!htb]
 						\centering
-						\includegraphics[width=13cm]{Imagenes/DiagramaControl.pdf}
+						\includegraphics[width=11cm]{Imagenes/DiagramaControl.pdf}
 						\caption{Diagrama en Bloques del Control Remoto} \label{img002}
 					\end{figure}
 	
 		\section{Software}
-			Tanto el control como el autito 
+			Tanto el autito como el control remoto tienen que estar verificando en su programa principal la recepción de datos desde el puerto serial. En el caso del
+			miniauto, los valores que lee del puerto son los que comandarán los movimientos del auto, por lo cual estos son los que controlarán los motores. En el
+			caso del control remoto, los valores que lee del puerto serie son los que deberá enviar al autito para decirle como debe moverse. 
 			\subsection{Diagrama de Flujo (Comunicación Serie - Motores)}
 				\begin{figure}[!htb]
 						\centering
