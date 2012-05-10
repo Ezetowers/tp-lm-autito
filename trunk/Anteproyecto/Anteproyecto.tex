@@ -27,36 +27,66 @@
 
 	\section{Proyecto: Autito RC}
 		El proyecto a realizar es un autito manejado a través de comunicación inalámbrica por un medio control remoto (estos autos son los llamados \emph{RC cars}).
-		Las tarea a desarrollar por el grupo consistirá en diseñar el circuito de control que permita poder manejar el autito. Para esta tarea se utilizarán dos
+		Las tarea a desarrollar por el grupo consiste en diseñar el circuito de control que permita manejar el autito. Para esta tarea se utilizarán dos
 		microcontroladores de la familia Atmel, uno para el circuito del auto y el otro para el circuito del control remoto. \\
-		\indent Además de la función básica de poder manejar al autito remota a través del control, 
-		
-		\indent Lalala 
+		\indent Además de la función básica de poder manejar al autito a través del control, se le agregarán al mismo algunas funcionalidades de forma de 
+		poder explotar la potencia y flexibilidad de los microcontroladores. \\
+		\indent Cabe destacar que la parte mecánica del auto no será diseñada por los integrantes del grupo, sino que se utilizará un miniauto el cual ya viene 
+		con la parte mecánica desarrollada.
+
+	\section{Miniauto}
+		El autito conseguido para implementar la parte del control es un vehículo con tracción delantera. El mismo posee un motor de continua para mover las
+		ruedas traseras y un servo para girar las ruedas delanteras. Dadas las funcionalidades que desean agregarse, la carcaza tanto del
+		control remoto como del auto seguramente no serán  utilizadas, pero al menos se intentará mantener el chasis del vehículo para no modificar la
+		parte mecánica del mismo.	
 
 	\section{Funcionalidades}
-		\subsection{Control Remoto}
-			\begin{itemize}
-				\item Display indicador de velocidad del auto
-				\item Motor erótico (te hace vibrar)
-				\item Alarma de aviso de autodestrucción
-				\item Medidor estado del auto
-				\item Recepción de datos del auto a través del receptor (Comunicación Serie)
-			\end{itemize}
+		A continuación se describen las funciones que serán desarrolladas tanto para el autito como para el control remoto:
 		\subsection{Autito}
-			\begin{itemize}
-				\item Control de los Motores (mediante dos puerto H)
-				\item Envío de datos de los bumpers al micro (los bumpers deben ser doble llave)
-				\item Envío de datos del micro al emisor (Comunicación Serie)
-			\end{itemize}
-
-	\section{Diagramas en Bloques}
-		\subsection{Autito}
-			\begin{figure}[!htb]
-					\centering
-					\includegraphics[width=13cm]{Imagenes/DiagramaAutito.pdf}
-					\caption{Diagrama en Bloques del Autito} \label{img001}
-				\end{figure}
-
+			\subsubsection{Control de Motores}
+				La parte mecánica del miniauto consiste en controlar el tanto el servo como el motor de continua. Para desarrollar esta tarea, se utilizarán dos
+				puentes H (uno para cada motor), de modo de poder controlar tanto la velocidad del vehículo como el sentido de giro.  
+			\subsubsection{Bumpers (Parachoques)}
+				En la parte delantera del auto se colocarán dos bumpers. Un bumper es un conmutador de 2 posiciones con muelle de retorno a la posición de reposo
+				y con una palanca de accionamiento. Mediante este dispositivo se detectarán choques en la parte frontal del auto. Al chocar el auto, se deberá
+				enviar al control remoto una señal avisando de este evento. 
+			\subsubsection{Emisor - Receptor (Puerto Serie)}
+				La comunicación con el control se realizará a través del puerto serie disponible por los microcontroladores utilizados. La comunicación inalámbrica
+				se realizará a través de del protocolo ZigBee u otro protocolo. En el caso de la comunicación inalámbrica por ZigBee, el LABI nos provee los 
+				integrados que nos permite convertir la comunicación serial a inalámbrica, de forma que en una primera instancia se pensará a la misma como si fuera
+				serial y no remota.
+			\subsubsection{Diagrama En Bloques}
+				\begin{figure}[!htb]
+						%\centering
+						\includegraphics[width=13cm]{Imagenes/DiagramaAutito.pdf}
+						\caption{Diagrama en Bloques del Autito} \label{img001}
+					\end{figure}
+				
 		\subsection{Control Remoto}
-		\subsection{Software}
+			\subsubsection{Velocidades (Caja de Cambios)}
+				A partir de un par de botones, se podrá ir variando la velocidad del miniauto. La cantidad de velocidades que poseerá el mismo aún no está definido.
+				El control poseerá un botón para aumentar la velocidad y otro para decrementar la velocidad.
+			\subsubsection{Display Indicador Velocidad}
+				Para poder indicar la velocidad actual del auto, se incluirá en el control un display de 7 segmentos. La decodificación entre la palabra a mostrar
+				por el 7 segmentos y el número en cuestión en un principio será realizada por el microcontrolador. 
+			\subsubsection{Motor Vibrador}
+				Se incluirá en el control un motor vibrador. El mismo vibrará cada vez que el autito choque frontalmente contra algún objeto, activando los bumpers
+				del mismo. 
+			\subsubsection{Emisor - Receptor (Puerto Serie)}
+				La comunicación entre el autito y el control se realizará de la misma forma en los dos circuitos, de la forma explicada en la sección del auto.
+			\subsubsection{Diagrama En Bloques}
+				\begin{figure}[!htb]
+						\centering
+						\includegraphics[width=13cm]{Imagenes/DiagramaControl.pdf}
+						\caption{Diagrama en Bloques del Control Remoto} \label{img002}
+					\end{figure}
+	
+		\section{Software}
+			Tanto el control como el autito 
+			\subsection{Diagrama de Flujo (Comunicación Serie - Motores)}
+				\begin{figure}[!htb]
+						\centering
+						\includegraphics[width=11cm]{Imagenes/DiagramaFlujoAutito.jpeg}
+						\caption{Diagrama en Bloques del Control Remoto} \label{img003}
+					\end{figure}
 \end{document}
