@@ -6,9 +6,13 @@ MVEL2 equ 11011111b
 MVEL3 equ 10111111b
 MVEL4 equ 01111111b
 
+SYNCWORD equ 11111111b
+CANTREPSYNC equ 20
+
 dseg at 0x30
 ; Si vale 1 le indica a la función SHIFTVEL que debe hacer un right shift
 flagVel: ds 1
+flagSyncVel: ds 1
 
 cseg at 0x00
 	jmp PRINCIPAL
@@ -53,12 +57,18 @@ PRINCIPAL:
 	; El programa principal del control tiene que censar lo que recibe en el puerto 2
 	; y según eso enviar al autito para que dirección moverse
 	mov P2, #11101111b
+	; Pongo el flag de sincronización en 1 para avisarle al puerto serie que antes de empezar a enviar
+	; información mande las palabras de sincronismo
+	mov flagSyncVel, #1
+	; Inicializo el valor de palabras de sincronización a enviar
+	mov R6, #CANTREPSYNC
 	setb TI
 	jmp $
 
 INTEX0ISR:
-	; Deshabilito las interrupciones externas
-	;clr ea
+	; Pongo en un el flag de sincronización
+	mov flagSyncVel, #1
+	mov R6, #CANTREPSYNC
 	; Presionaron el pulsador 0, incremento y muestro si es que tengo que hacerlo
 	cjne r0, #4, JMP1
 	; Es igual a 4, no hago nada
@@ -70,7 +80,7 @@ JMP1:
 	movc A,@A+DPTR
 	mov P1, A
 	; Espero hasta que el usuario suelte el botón
-	jb P3.2, $
+	jnb P3.2, $
 	; El usuario soltó el botón, genero un delay para saltear los rebotes
 	call DELAY
 FIN1:
@@ -102,7 +112,9 @@ FIN:
 	ret
 	
 INTEX1ISR:
-	;clr ea
+	; Pongo en un el flag de sincronización
+	mov flagSyncVel, #1
+	mov R6, #CANTREPSYNC
 	; Presionaron el pulsador 1, decremento y muestro si es que tengo que hacerlo
 	cjne r0, #1, JMP2
 	; Es igual a 1, no hago nada
@@ -114,7 +126,7 @@ JMP2:
 	movc A,@A+DPTR
 	mov P1, A
 	; Espero a que el usuario suelte el botón
-	jb P3.3, $
+	jnb P3.3, $
 	; El usuario soltó el botón, genero un delay para saltear los rebotes
 	call DELAY
 FIN2:
@@ -148,16 +160,34 @@ CONT:
 	mov R2, A
 	mov A, P2
 	anl A, #MASKHIGHAND
-	add A, R2
-	; TODO:V CORREGIR ESTO
+	add A, R2									   
+	; TODO: CORREGIR ESTO
 	orl A, #00001111b
 	mov P2, A
 	ret
 	 
 INTPSISR:
+	; Verifico que el flag de sincronismo este en 1
+	mov A, flagSyncVel
+	cjne A, #0, SYNCRONIZE 
+	; Es igual a cero, no necesito sincronizar
+	mov A, P2
+	cpl A
+DSPSYNC:
+	mov sbuf, A
 	clr TI
-	mov sbuf,P2
 	reti
+
+SYNCRONIZE:
+	; Verifico cuantas palabras de sincronización se mandaron
+	djnz R6, CONTSYNC
+	; No salté, mandé todas las palabras de sincronizacíón
+	mov R6, #CANTREPSYNC
+	mov flagSyncVel, #0
+CONTSYNC:
+	; Mando la palabra de sincronización
+	mov A, #SYNCWORD
+	jmp DSPSYNC
 
 TABLA: db 01011111b, 00000110b, 00111011b, 00101111b, 01100110b, 01101101b, 01111101b, 00000111b, 01111111b, 01100111b
 end	
