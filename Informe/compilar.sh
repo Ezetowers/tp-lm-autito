@@ -7,3 +7,4 @@ pdflatex $nombre.tex
 
 # Borro los archivos auxiliares
 rm $nombre.toc $nombre.aux $nombre.log $nombre.out 
+
