@@ -2,17 +2,15 @@
 MASKLOWOR equ 00001111b
 MASKLOWAND equ 11110000b
 MASKHIGHAND equ 00001111b
-MVEL2 equ 11011111b
-MVEL3 equ 10111111b
-MVEL4 equ 01111111b
 
-SYNCWORD equ 11111111b
+SYNCWORD equ 01111111b
 CANTREPSYNC equ 20
 
-dseg at 0x30
-; Si vale 1 le indica a la función SHIFTVEL que debe hacer un right shift
-flagVel: ds 1
-flagSyncVel: ds 1
+bseg at 0x30
+; Si vale 1 le indica a la función SHIFTVEL que debe 
+; hacer un right shift
+flagVel: dbit 1
+flagSyncVel: dbit 1
 
 cseg at 0x00
 	jmp PRINCIPAL
@@ -38,7 +36,8 @@ PRINCIPAL:
 	setb ex1
 	setb es
 	setb ea
-	; Habilito a las interrupciones externas para que se habiliten por flanco negativo
+	; Habilito a las interrupciones externas para que se habiliten 
+	; por flanco negativo
 	setb it0
 	setb it1
 	; Guardo en el DPTR la posición de la tabla
@@ -48,18 +47,21 @@ PRINCIPAL:
 	mov P1, #00000110b
 	; Uso a R0 como contador
 	mov R0, #1
-	; Utilizo el temporizador 0 para generar delays y el temporizador 1
-	; para generar la tasa en baudios del puerto serie (2400)
+	; Utilizo el temporizador 0 para generar delays y el 
+	; temporizador 1 para generar la tasa en baudios del 
+	; puerto serie (2400)
 	mov scon, #0x50
 	mov tmod, #0x21
 	mov th1, #-24
 	setb tr1
-	; El programa principal del control tiene que censar lo que recibe en el puerto 2
-	; y según eso enviar al autito para que dirección moverse
+	; El programa principal del control tiene que censar lo 
+	; que recibe en el puerto 2 y según eso enviar al autito 
+	; para que dirección moverse
 	mov P2, #11101111b
-	; Pongo el flag de sincronización en 1 para avisarle al puerto serie que antes de empezar a enviar
-	; información mande las palabras de sincronismo
-	mov flagSyncVel, #1
+	; Pongo el flag de sincronización en 1 para avisarle al 
+	; puerto serie que antes de empezar a enviar información 
+	; mande las palabras de sincronismo
+	setb flagSyncVel
 	; Inicializo el valor de palabras de sincronización a enviar
 	mov R6, #CANTREPSYNC
 	setb TI
@@ -67,9 +69,10 @@ PRINCIPAL:
 
 INTEX0ISR:
 	; Pongo en un el flag de sincronización
-	mov flagSyncVel, #1
+	setb flagSyncVel
 	mov R6, #CANTREPSYNC
-	; Presionaron el pulsador 0, incremento y muestro si es que tengo que hacerlo
+	; Presionaron el pulsador 0, incremento y muestro 
+	; si es que tengo que hacerlo
 	cjne r0, #4, JMP1
 	; Es igual a 4, no hago nada
 	jmp FIN1
@@ -81,14 +84,15 @@ JMP1:
 	mov P1, A
 	; Espero hasta que el usuario suelte el botón
 	jnb P3.2, $
-	; El usuario soltó el botón, genero un delay para saltear los rebotes
+	; El usuario soltó el botón, genero un delay para 
+	; saltear los rebotes
 	call DELAY
 FIN1:
-	;setb ea
 	reti
 
 DELAY:
-	; Espero que pasen aproximadamente 300 ms para asegurarme que hayan pasado todos los rebotes
+	; Espero que pasen aproximadamente 300 ms para asegurarme 
+	; que hayan pasado todos los rebotes
 	; Cargo el temporizador para que desborde a los 300ms
 	mov R5, #31
 LOOP:
@@ -101,7 +105,8 @@ LABEL:
 	; Lo activo y espero que pasen los 300 ms
 	setb tr0
 	jnb tf0, $
-	; Pasaron los 300 ms, borro los flags del temporizador y termino
+	; Pasaron los 300 ms, borro los flags del temporizador
+	; y termino
 	clr tr0
 	clr tf0
 	jmp LOOP
@@ -113,9 +118,10 @@ FIN:
 	
 INTEX1ISR:
 	; Pongo en un el flag de sincronización
-	mov flagSyncVel, #1
+	setb flagSyncVel
 	mov R6, #CANTREPSYNC
-	; Presionaron el pulsador 1, decremento y muestro si es que tengo que hacerlo
+	; Presionaron el pulsador 1, decremento y muestro si es 
+	; que tengo que hacerlo
 	cjne r0, #1, JMP2
 	; Es igual a 1, no hago nada
 	jmp FIN2
@@ -127,49 +133,50 @@ JMP2:
 	mov P1, A
 	; Espero a que el usuario suelte el botón
 	jnb P3.3, $
-	; El usuario soltó el botón, genero un delay para saltear los rebotes
+	; El usuario soltó el botón, genero un delay para 
+	; saltear los rebotes
 	call DELAY
 FIN2:
-	;setb ea
 	reti
 
 INCVEL:
-	mov flagVel, #1
+	setb flagVel
 	call SHIFTVEL
 	ret
 
 DECVEL:
-	mov flagVel, #0
+	clr flagVel
 	call SHIFTVEL
-	ret
+	ret									 
 
 SHIFTVEL:
-	; Pongo en 1 la parte baja del P2
+	; Este método se encarga de cambiar la velocidad del 
+	; auto desplazando un bit entre 4.
+	; Velocidades: 
+	; 0001 -> 1
+	; 0010 -> 2
+	; 0100 -> 3
+	; 1000 -> 4
+	; Pongo en 1 la parte baja del puerto P2
 	mov A, P2
 	orl A, #MASKLOWOR
+	; Complemento el dato
 	cpl A
-	mov R2, flagVel
-	cjne R2, #1, RSHIFT
+	; Shifteo a la izquierda o a la derecha según corresponda
+	jnb flagVel, RSHIFT
 	rl A
 	jmp CONT
 RSHIFT:
 	rr A
 CONT:
+	; Ahora que ya hice el shift, complemento y escribo en el puerto
 	cpl A
-	anl A, #MASKLOWAND
-	mov R2, A
-	mov A, P2
-	anl A, #MASKHIGHAND
-	add A, R2									   
-	; TODO: CORREGIR ESTO
-	orl A, #00001111b
 	mov P2, A
 	ret
 	 
 INTPSISR:
 	; Verifico que el flag de sincronismo este en 1
-	mov A, flagSyncVel
-	cjne A, #0, SYNCRONIZE 
+	jnb flagSyncVel, SYNCRONIZE
 	; Es igual a cero, no necesito sincronizar
 	mov A, P2
 	cpl A
@@ -183,7 +190,7 @@ SYNCRONIZE:
 	djnz R6, CONTSYNC
 	; No salté, mandé todas las palabras de sincronizacíón
 	mov R6, #CANTREPSYNC
-	mov flagSyncVel, #0
+	clr flagSyncVel
 CONTSYNC:
 	; Mando la palabra de sincronización
 	mov A, #SYNCWORD
