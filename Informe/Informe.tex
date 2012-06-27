@@ -211,7 +211,7 @@
 	
 		\begin{tabular}{|c|c|c|}
 			\hline
-			\textbf{\normalsize Componente} & \textbf{\normalsize Precio unitario} & 							\textbf{\normalsize Cantidad} \\
+			\textbf{Componente} & \textbf{Precio Unit. (U\$S}) & \textbf{Cantidad} \\
 			\hline
 			Placas experimentales 10cm X 10cm & & 2\\
 			\hline
@@ -225,9 +225,9 @@
 			\hline
 			RWS-371-4 & & 1\\
 			\hline
-			7805 & & 3\\
+			Regulador 7805 & 0.420 & 3\\
 			\hline
-			L293D & & 1\\
+			L293D (Puente H) & & 1\\
 			\hline
 			ULN2803 & & 1\\
 			\hline
@@ -261,6 +261,9 @@
 			\hline
 			Zócalos - 8 patas & & 1\\
 			\hline
+			\hline
+			\textbf{Total} & \multicolumn{2}{|c|}{\textbf{??}} \\
+			\hline   
 		\end{tabular}
 	\section{Software}
 		En esta sección se exhibe el código de la aplicación. En las subsecciones existentes en la misma se explican los problemas principales que surgieron
@@ -301,8 +304,6 @@
 				la recepción de diferentes palabras en el módulo receptor hasta lograr una comunicación fluída.  
 			\end{itemize}
 
-		\subsection{Diagramas de Flujo}
-				
 		\subsection{Código}
 			\subsubsection{Autito}
 				\begin{verbatim}
@@ -790,10 +791,10 @@ end
 			transmisor pero llegan permutadas en el receptor. No se encontró una solución o explicación lógica a este comportamiento.
 			\item Debido al problema anterior, se testearon las velocidades y las direcciones del auto y se corroboró que sólo 3 de las 4 velocidades funcionan
 			correctamente.
-			\item ??
 		\end{itemize}
    
 	\section{Conclusiones}
-	TODO
+		
+			
 
 \end{document}
