@@ -87,7 +87,7 @@
 						\item Primero, se utilizaron fuentes diferentes para alimentar a estas dos etapas. Esto se debe a que la etapa de potencia analógica consume
 						mucha más potencia que la parte digital, debido a que esta es la que se encarga de proveerle la energía necesaria a los motores para que 
 						estos funcionen.
-						\item Segundo, se diseño la placa forma que la tierra de estas dos etapas bien definidas se encuentren desacopladas. Esto mismo se puede observar
+						\item Segundo, se diseña la placa forma que la tierra de estas dos etapas bien definidas se encuentren desacopladas. Esto mismo se puede observar
 						en la figura \ref{timg002} donde se exhibe el PCB del autito. Las dos tierras, tanto la digital como la analógica se unen en un sólo punto en el 
 						cual se conectan además las baterias del autito. Con este conexionado, el ruido que pueda llegar a generarse en la etapa de analógica no llega a 
 						la etapa digital.    
@@ -105,7 +105,7 @@
 					al mismo en función del valor medio de la señal que se inserte entre sus terminales. Si el valor medio de la señal ingresada es positiva, el mismo 
 					girará para un lado mientras que si la misma es  negativa el motor girará para el lado contrario. \\
 					\indent	El microncontrolador sólo puede manejar los estados lógicos 0 y 1 a través de sus puertos. El estado 1 es representado por una tensión de 
-					5$~\text{V}$ y el estado 0 es representado por una tensión de $~\text{V}$. Si bien los estados en realidad están asociados a un rango de valores 
+					5$~\text{V}$ y el estado 0 es representado por una tensión de $0~\text{V}$. Si bien los estados en realidad están asociados a un rango de valores 
 					válidos más que a un valor fijo, lo importante es que en ninguno de estos estados el micro puede entregar una tensión negativa.
 					\indent Para solucionar este problema se utiliza un circuito muy conocido llamado \emph{Puente H}. El mismo se utiliza para a través de 
 					señales que no poseen la particularidad de alternar entre polaridad positiva y negativa poder controlar la dirección de giro de un motor. Debido a 
@@ -144,8 +144,9 @@
 
 					En el circuito esquemático de la figura \ref{timg001} se puede observar que el microcontrolador maneja los motores a través del puerto 1. El puerto 1 
 					como se sabe posee resistencias de pull-up, de forma que se conecta directamente las salidas del puerto a las entradas del integrado L293D. En el caso
-					de este integrado, no fue necesario agregar una etapa de potencia entre el micro y el puente H dado que las corrientes que exije el L293D son lo 
-					pequeñas. \\
+					de este integrado, no fue necesario agregar una etapa de potencia entre el micro y el puente H dado que las corrientes que exije el L293D menores a las
+					máximas que puede soportar los pines del puerto (100 uA máximos del L293D contra aproximadamente 10 mA máximos que soporta cada pin del 
+					microntrolador). \\
 					\indent Para comandar los motores se utiliza la entrada de habilitación EN que provee el integrado \emph{L293D}. A la entrada de potencia
 					VS se conecta directamente la alimentación de la batería.  De esta forma, a partir de la señal ingresada en VEN se regula el valor medio de la 
 					señal que le llega a los motores. El microcontrolador se encarga de generar señales cuadradas que, según el duty cycle de las mismas, 
@@ -155,7 +156,9 @@
 
 				\subsubsection{Comunicación Inalámbrica}	
 			 		La comunicación entre el control y el autito se realiza por medio de transmisión serie. Esto se realiza gracias a que los microcontroladores de
-					la familia 8051 proveen una comunicación serie integrada en el mismo implementada a través del protocolo RS232. Sin embargo, dado que como se 
+					la familia 8051 poseen un puerto serie integrado en el mismo. Se utiliza al puerto serie como una UART de 8 bits para enviar y recibir datos entre 
+					el autito y el control . \\
+					\indent Sin embargo, dado que como se 
 					expuso en las prestaciones técnicas la comunicación entre el control y el auto debe ser inalámbrica, se utilizan en el presente proyecto un par
 					de módulos apareados que se encargan de resolver este problema. Estos módulos son el TWS-BS3 (Transmisor) y el RWS-317-4 (Receptor). Los
 					mismos envían y reciben información de forma serie modulando la señal en AM a una frecuencia de 433.12$~\text{MHz}$. Dado que los mismos trasmiten
@@ -175,7 +178,9 @@
 			\indent En la figura podemos ver también el circuito de reset utilizado. Este se conecta a la pata RST del microcontrolador y consta de una 
 			resistencia de 100$\Omega$, una de 8.2k$\Omega$, un capacitor de 100uF y un pulsador. Al apretar el pulsador, la pata RST del micro se pone en estado 
 			alto hasta que éste deje de ser pulsado. El capacitor hace que se mantenga en estado alto esta pata durante el tiempo necesario para que el micro se 
-			termine de resetar.\\
+			termine de resetar. Este tiempo depende exclusivamente de lo que tarde en estabilizarse el oscilador utilizado por el microcontrolador. Por lo general,
+			el tiempo que tardan los mismos en estabilizarse es del orden de los milisegundos, de ahí que el \emph{Tau} del circuito de reset compuesto por el 
+			capacitor de 10 uF y la resistencia de $8.2~\text{k}\Omega$ sea de 82 ms. \\   
 			\indent Todos los puertos del microcontrolador, a excepción del puerto 0, tienen una red de pull-up que permite trabajar con estos puertos 
 			sin necesidad de utilizar una alimentación externa (ya que internamente, cada uno de los pines del puerto está conectado a VCC a través de una 
 			resistencia de pull-up).\\
@@ -292,7 +297,7 @@
 			\end{itemize}     
 			
 		\subsection{Protocolo de Comunicación}
-			Si bien la comunicación entre el autito y el control se realiza por medio de comunicación serie a través del protocolo RS232, a la hora de conectar
+			Si bien la comunicación entre el autito y el control se realiza por medio de comunicación serie, a la hora de conectar
 			los módulos RF para lograr una comunicación inalámbrica surgió un inconveniente. El problema en cuestión fue que las palabras enviadas por el 
 			transmisor no llegaban sincronizadas al receptor del autito. De esta forma, la comunicación inalámbrica no se realizó de forma exitosa. Sumado a este 
 			problema, siempre estuvo presente ruido en la comunicación que generaba como efecto que no todas las palabras enviadas por el transmisor llegaran 
@@ -305,8 +310,6 @@
 				velocidades del auto, se envía una palabra especial de sincronismo al receptor. Esta palabra de sincronismo fue elegida de forma empírica, testeando 
 				la recepción de diferentes palabras en el módulo receptor hasta lograr una comunicación fluída.  
 			\end{itemize}
-
-	
 
 		\subsection{Código}
 			\subsubsection{Autito}
