@@ -73,6 +73,11 @@ PSISR:
 	jmp INTPSISR
 
 PRINCIPAL:
+	; Inicializo el stack pointer en el primer registro del 
+	; banco 1 debido a no utilizo este banco y al ser todas
+	; las funciones del proyecto leafs, el stack no llega a 
+	; ocupar más de dos o tres posiciones de memoria
+	mov sp, #0x08
 	; Habilitación de interrupciones
 	setb ea
 	setb es
