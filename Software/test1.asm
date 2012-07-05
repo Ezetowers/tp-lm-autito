@@ -3,7 +3,7 @@ MASKLOWOR equ 00001111b
 MASKLOWAND equ 11110000b
 MASKHIGHAND equ 00001111b
 
-SYNCWORD equ 01111111b
+SYNCWORD equ 10000000b
 CANTREPSYNC equ 20
 
 bseg at 0x30
@@ -73,10 +73,17 @@ INTEX0ISR:
 	mov R6, #CANTREPSYNC
 	; Presionaron el pulsador 0, incremento y muestro 
 	; si es que tengo que hacerlo
-	cjne r0, #4, JMP1
+	cjne r0, #4, JMP11
 	; Es igual a 4, no hago nada
 	jmp FIN1
-JMP1: 	
+JMP11: 	
+	; Espero un tiempo de 20ms. Si luego P3.2 = 1, 
+	; entonces es un rebote y espero de nuevo hasta 
+	; que P3.2 = 0
+	call DELAY
+	jb P3.2, JMP11
+	; Pasé el primer rebote, incremento las velocidades y espero 
+	; que el usuario suelte el botón
 	call INCVEL
 	inc R0
 	mov A, R0
@@ -84,58 +91,47 @@ JMP1:
 	mov P1, A
 	; Espero hasta que el usuario suelte el botón
 	jnb P3.2, $
-	; El usuario soltó el botón, genero un delay para 
-	; saltear los rebotes
+	; El usuario soltó el botón, hago lo mismo que arriba,
+	; verifico que realmente lo haya soltado y no haya 
+	; sido un rebote (a través de un DELAY) y luego
+	; salgo 
+JMP12:
 	call DELAY
+	jnb P3.2, JMP12
 FIN1:
 	reti
-
-DELAY:
-	; Espero que pasen aproximadamente 300 ms para asegurarme 
-	; que hayan pasado todos los rebotes
-	; Cargo el temporizador para que desborde a los 300ms
-	mov R5, #31
-LOOP:
-	djnz R5, LABEL
-	; El contador llegó a cero, termino		 
-	jmp FIN
-LABEL:
-	mov th0, #high(-10000)
-	mov tl0, #low(-10000)
-	; Lo activo y espero que pasen los 300 ms
-	setb tr0
-	jnb tf0, $
-	; Pasaron los 300 ms, borro los flags del temporizador
-	; y termino
-	clr tr0
-	clr tf0
-	jmp LOOP
-FIN:
-	clr tr0
-	clr tf0
-	clr ie0
-	ret
 	
 INTEX1ISR:
 	; Pongo en un el flag de sincronización
 	setb flagSyncVel
 	mov R6, #CANTREPSYNC
-	; Presionaron el pulsador 1, decremento y muestro si es 
-	; que tengo que hacerlo
-	cjne r0, #1, JMP2
+	; Presionaron el pulsador 1, incremento y muestro 
+	; si es que tengo que hacerlo
+	cjne r0, #1, JMP21
 	; Es igual a 1, no hago nada
 	jmp FIN2
-JMP2: 	
+JMP21: 	
+	; Espero un tiempo de 20ms. Si luego P3.3 = 1, 
+	; entonces es un rebote y espero de nuevo hasta 
+	; que P3.3 = 0
+	call DELAY
+	jb P3.3, JMP21
+	; Pasé el primer rebote, incremento las velocidades y espero 
+	; que el usuario suelte el botón
 	call DECVEL
 	dec R0
 	mov A, R0
 	movc A,@A+DPTR
 	mov P1, A
-	; Espero a que el usuario suelte el botón
+	; Espero hasta que el usuario suelte el botón
 	jnb P3.3, $
-	; El usuario soltó el botón, genero un delay para 
-	; saltear los rebotes
+	; El usuario soltó el botón, hago lo mismo que arriba,
+	; verifico que realmente lo haya soltado y no haya 
+	; sido un rebote (a través de un DELAY) y luego
+	; salgo 
+JMP22:
 	call DELAY
+	jnb P3.3, JMP22
 FIN2:
 	reti
 
@@ -147,21 +143,46 @@ INCVEL:
 DECVEL:
 	clr flagVel
 	call SHIFTVEL
-	ret									 
+	ret	
+	
+	DELAY:
+	; Espero que pasen aproximadamente 50 ms para asegurarme 
+	; que hayan pasado todos los rebotes
+	; Cargo el temporizador para que desborde a los 300ms
+	mov R5, #6
+LOOP:
+	djnz R5, LABEL
+	; El contador llegó a cero, termino		 
+	jmp FIN
+LABEL:
+	mov th0, #high(-10000)
+	mov tl0, #low(-10000)
+	; Lo activo y espero que pasen los 50 ms
+	setb tr0
+	jnb tf0, $
+	; Pasaron los 50 ms, borro los flags del temporizador
+	; y termino
+	clr tr0
+	clr tf0
+	jmp LOOP
+FIN:
+	clr tr0
+	clr tf0
+	clr ie0
+	ret								 
 
 SHIFTVEL:
 	; Este método se encarga de cambiar la velocidad del 
 	; auto desplazando un bit entre 4.
 	; Velocidades: 
-	; 0001 -> 1
-	; 0010 -> 2
-	; 0100 -> 3
-	; 1000 -> 4
+	; 1110 -> 1
+	; 1101 -> 2
+	; 1011 -> 3
+	; 0111 -> 4
 	; Pongo en 1 la parte baja del puerto P2
 	mov A, P2
 	orl A, #MASKLOWOR
-	; Complemento el dato
-	cpl A
+		
 	; Shifteo a la izquierda o a la derecha según corresponda
 	jnb flagVel, RSHIFT
 	rl A
@@ -169,14 +190,13 @@ SHIFTVEL:
 RSHIFT:
 	rr A
 CONT:
-	; Ahora que ya hice el shift, complemento y escribo en el puerto
-	cpl A
+	; Ahora que ya hice el shift, escribo en el puerto
 	mov P2, A
 	ret
 	 
 INTPSISR:
 	; Verifico que el flag de sincronismo este en 1
-	jnb flagSyncVel, SYNCRONIZE
+	jb flagSyncVel, SYNCRONIZE
 	; Es igual a cero, no necesito sincronizar
 	mov A, P2
 	cpl A
