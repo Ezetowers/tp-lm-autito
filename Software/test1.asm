@@ -30,7 +30,12 @@ PSISR:
 	jmp INTPSISR
 	
 	org 0x30
-PRINCIPAL:							   
+PRINCIPAL:		
+	; Inicializo el stack pointer en el primer registro del 
+	; banco 1 debido a no utilizo este banco y al ser todas
+	; las funciones del proyecto leafs, el stack no llega a 
+	; ocupar más de dos o tres posiciones de memoria
+	mov sp, #0x08
 	; Primero habilito las interrupciones en el programa
 	setb ex0
 	setb ex1
