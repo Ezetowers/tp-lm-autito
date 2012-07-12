@@ -87,7 +87,7 @@
 						\item Primero, se utilizaron fuentes diferentes para alimentar a estas dos etapas. Esto se debe a que la etapa de potencia analógica consume
 						mucha más potencia que la parte digital, debido a que esta es la que se encarga de proveerle la energía necesaria a los motores para que 
 						estos funcionen.
-						\item Segundo, se diseña la placa forma que la tierra de estas dos etapas bien definidas se encuentren desacopladas. Esto mismo se puede observar
+						\item Segundo, se diseña la placa de forma que la tierra de estas dos etapas bien definidas se encuentren desacopladas. Esto mismo se puede observar
 						en la figura \ref{timg002} donde se exhibe el PCB del autito. Las dos tierras, tanto la digital como la analógica se unen en un sólo punto en el 
 						cual se conectan además las baterias del autito. Con este conexionado, el ruido que pueda llegar a generarse en la etapa de analógica no llega a 
 						la etapa digital.    
@@ -115,7 +115,7 @@
 					\begin{figure}[!htb]
 						\centering
 						\includegraphics[width=7cm]{Imagenes/puenteH.jpg}
-						\caption{Esquemático de la plaqueta del Control} \label{timg003}
+						\caption{Vista del L293D} \label{timg003}
 					\end{figure}
 
 					El integrado L293D contiene 2 puentes H, uno de cada lado de la pastilla del integrado. Los pines de salida Y son los que van conectados a 
@@ -176,7 +176,7 @@
 			microcontrolador. También se conecta la pata EA del microcontrolador a VCC para que el micro utilice la ROM interna para código. Entre los terminales 
 			XTAL1 y XTAL2 se conecta un cristal de 11.059MHz de la forma en que se muestra en la figura \ref{limg002}. \\
 			\indent En la figura podemos ver también el circuito de reset utilizado. Este se conecta a la pata RST del microcontrolador y consta de una 
-			resistencia de 100$\Omega$, una de 8.2k$\Omega$, un capacitor de 100uF y un pulsador. Al apretar el pulsador, la pata RST del micro se pone en estado 
+			resistencia de 100$\Omega$, una de 8.2k$\Omega$, un capacitor de 10uF y un pulsador. Al apretar el pulsador, la pata RST del micro se pone en estado 
 			alto hasta que éste deje de ser pulsado. El capacitor hace que se mantenga en estado alto esta pata durante el tiempo necesario para que el micro se 
 			termine de resetar. Este tiempo depende exclusivamente de lo que tarde en estabilizarse el oscilador utilizado por el microcontrolador. Por lo general,
 			el tiempo que tardan los mismos en estabilizarse es del orden de los milisegundos, de ahí que el \emph{Tau} del circuito de reset compuesto por el 
@@ -285,16 +285,17 @@
 			que el usuario no deseo (por ejemplo, de velocidad 1 a 3).  \\
 			\indent Para solucionar este problema se recurre a una solución por software, dado que recurrir a una solución por hardware no sería viable teniendo 
 			un microcontrolador en la placa del control cumpliendo pocas funciones. Teniendo en cuenta que los botones de velocidades generan interrupciones 
-			externas y distintas una de la otra, se procede a exhibir la lógica del circuito antirebote implementado en el proyecto en el microcontrolador del
+			externas y distintas una de la otra, se procede a exhibir la lógica antirebote implementado en el proyecto en el microcontrolador del
 			control:
 			
 			\begin{itemize}
-				\item Llega una interrupción externa, lo cual indica que se desea aumentar/disminuir la velocidad actual.   
+				\item Llega una interrupción externa, lo cual indica que se desea aumentar/disminuir la velocidad actual.   		\item Se espera un tiempo de 50ms hasta que los rebotes hayan finalizado.
+				\item Se chequea que el valor lógico de la pata del puerto que se utiliza para recibir interrupciones externas esté en 0, de lo contrario se vuelve a esperar 50 ms y se repite el proceso.
 				\item Se aumenta/disminuye la velocidad siempre que se pueda.
 				\item Se verifica que el usuario haya soltado el pulsador de la velocidad. En el caso de que aún se encuentre apretado, se espera a que el mismo lo 
 				suelte.
-				\item Una vez que se verificó que el usuario soltó el botón, se genera un delay de 300 ms para esperar que pasen los rebotes indeseados.
-				\item Luego de pasado el delay generado, se termina la interrupción y se vuelve al programa principal.  
+				\item Una vez que se verificó que el usuario soltó el botón, se genera un delay de 50ms para esperar que pasen los rebotes indeseados.
+				\item Luego de pasado el delay generado,se verifica que el valor lógico de la pata del micro sea 1 (que significaría que los rebotes han terminado). Si lo es se termina la interrupción y se vuelve al programa principal; si el valor lógico es 0, se interpreta que los rebotes aún no han terminado y se vuelve a esperar y chequear el valor lógico hasta que los rebotes concluyan. 
 			\end{itemize}     
 			
 		\subsection{Protocolo de Comunicación}
@@ -391,10 +392,10 @@ PSISR:
 
 PRINCIPAL:
 	; Inicializo el stack pointer en el primer registro del 
-	; banco 1 debido a no utilizo este banco y al ser todas
+	; banco 1 debido a que no utilizo este banco y al ser todas
 	; las funciones del proyecto leafs, el stack no llega a 
 	; ocupar más de dos o tres posiciones de memoria
-	mov sp, #0x08
+	mov sp, #0x07
 	; Habilitación de interrupciones
 	setb ea
 	setb es
@@ -630,10 +631,10 @@ PSISR:
 	org 0x30
 PRINCIPAL:							   
 	; Inicializo el stack pointer en el primer registro del 
-	; banco 1 debido a no utilizo este banco y al ser todas
+	; banco 1 debido a que no utilizo este banco y al ser todas
 	; las funciones del proyecto leafs, el stack no llega a 
 	; ocupar más de dos o tres posiciones de memoria
-	mov sp, #0x08
+	mov sp, #0x07
 	; Primero habilito las interrupciones en el programa
 	setb ex0
 	setb ex1
@@ -834,6 +835,22 @@ end
 			\item Debido al problema anterior, se testearon las velocidades y las direcciones del auto y se corroboró que sólo 3 de las 4 velocidades funcionan
 			correctamente.
 		\end{itemize}
+
+		Se exhiben además en las figuras \ref{timg004} y \ref{timg005} fotos del proyecto terminado.
+
+		\begin{figure}[!htb]
+			\centering
+			\includegraphics[width=9cm]{Imagenes/ImgAutito.jpg}
+			\caption{Imagen del autito en su última versión} \label{timg004}
+		\end{figure}
+
+		\begin{figure}[!htb]
+			\centering
+			\includegraphics[width=9cm]{Imagenes/ImgControl.jpg}
+			\caption{Imagen del control remoto en su última versión} \label{timg005}
+		\end{figure}
+
+	
    
 	\section{Conclusiones}
 		Luego de la realización del proyecto, es posible concluir que el hardware toma un papel sumamente importante, ya que mediante un diseño correcto y eficiente, es posible minimizar las posibles complicaciones que pueden llegar a producirse. De esta forma, se logra un diseño robusto y se simplifica de forma notable el desarrollo del software, ya que ésta deberá ocuparse unicamente de las cuestiones intrínsecas del mismo y no de solucionar problemáticas producidas debido a determinadas falencias de hardware.\\
@@ -841,7 +858,7 @@ end
 		\indent Finalmente, se destaca las complicaciones introducidas debido a la comunicacion de radiofrecuencias. A esta comunicación hay que brindarle cierta atención en cuanto a los detalles que hacen a la comunicación en sí, independientemente  del funcionamiento de los puertos serie de los microcontroladores.
 			
 \newpage
-
+\newpage
 		\section{Apéndice A - Diagramas de Flujo}
 			\subsection{Autito}
 
